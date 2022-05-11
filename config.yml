@@ -1,0 +1,12 @@
+---
+api:
+  address: :8080
+  countries:
+    - Russia
+    - Undefined
+db:
+  conn_string: "host=companies-db port=5432 user=user_db dbname=companies sslmode=disable" # use it for the local development only
+  max_open_conns: 100
+  conn_max_lifetime: 60s
+  migration_dir_path: "./sql-migrations"
+  migration_table: "migrations"

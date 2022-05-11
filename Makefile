@@ -1,0 +1,11 @@
+.PHONY: docker-run
+docker-run:
+	@docker-compose up --build -d --remove-orphans
+
+.PHONY: docker-up
+docker-up:
+	@docker-compose up -d
+
+.PHONY: docker-build
+docker-build:
+	@docker-compose build

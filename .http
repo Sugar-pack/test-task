@@ -1,0 +1,9 @@
+POST http://localhost:8080/companies
+
+{
+    "name": "test company2",
+    "code": "test code",
+    "country": "test country",
+    "website": "test website",
+    "phone": "test phone"
+}
