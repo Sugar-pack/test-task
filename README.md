@@ -1,4 +1,5 @@
 ## TEST TASK
+[![codecov](https://codecov.io/gh/Sugar-pack/test-task/branch/main/graph/badge.svg?token=PECoStfsyy)](https://codecov.io/gh/Sugar-pack/test-task)
 
 ### Example
    look at .http file for examples.
