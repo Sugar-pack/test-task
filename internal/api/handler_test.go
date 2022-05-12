@@ -89,3 +89,64 @@ func (s *CompanyTestSuite) TestCompanyHandler_CreateCompany_OK() {
 		Return(nil)
 	httpExpect.POST("/companies/create").WithJSON(company).Expect().Status(http.StatusOK)
 }
+
+func (s *CompanyTestSuite) TestCompanyHandler_UpdateCompany_DecodeErr() {
+	t := s.T()
+
+	httpExpect := httpexpect.New(t, s.server.URL)
+	badBody := []byte("bad body")
+	httpExpect.PATCH("/companies/update").WithJSON(badBody).Expect().Status(http.StatusBadRequest)
+}
+
+func (s *CompanyTestSuite) TestCompanyHandler_UpdateCompany_RepoErr() {
+	t := s.T()
+
+	httpExpect := httpexpect.New(t, s.server.URL)
+	companyUpdate := model.CompanyForUpdate{
+		FilterFields: model.Company{
+			Name:    "name",
+			Code:    "code",
+			Country: "country",
+			Website: "website",
+			Phone:   "phone",
+		},
+		FieldsForUpdate: model.Company{
+			Name:    "new name",
+			Code:    "new code",
+			Country: "new country",
+			Website: "new website",
+			Phone:   "new phone",
+		},
+	}
+	err := errors.New("error")
+	s.repo.On("UpdateCompany", mock.AnythingOfType("*context.valueCtx"), MapJSONUpdateToDB(&companyUpdate)).
+		Return(int64(0), err)
+	httpExpect.PATCH("/companies/update").WithJSON(companyUpdate).Expect().Status(http.StatusInternalServerError)
+	s.repo.AssertExpectations(t)
+}
+
+func (s *CompanyTestSuite) TestCompanyHandler_UpdateCompany_OK() {
+	t := s.T()
+
+	httpExpect := httpexpect.New(t, s.server.URL)
+	companyUpdate := model.CompanyForUpdate{
+		FilterFields: model.Company{
+			Name:    "name",
+			Code:    "code",
+			Country: "country",
+			Website: "website",
+			Phone:   "phone",
+		},
+		FieldsForUpdate: model.Company{
+			Name:    "new name",
+			Code:    "new code",
+			Country: "new country",
+			Website: "new website",
+			Phone:   "new phone",
+		},
+	}
+	s.repo.On("UpdateCompany", mock.AnythingOfType("*context.valueCtx"), MapJSONUpdateToDB(&companyUpdate)).
+		Return(int64(1), nil)
+	httpExpect.PATCH("/companies/update").WithJSON(companyUpdate).Expect().Status(http.StatusOK)
+	s.repo.AssertExpectations(t)
+}
