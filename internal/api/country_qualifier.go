@@ -22,10 +22,12 @@ func NewIPAPI(whiteList []string) *IPAPICountryQualifier {
 	return &IPAPICountryQualifier{WhiteList: whiteList}
 }
 
+const urlPattern = "https://ipapi.co/%s/country_name/"
+
 func (i *IPAPICountryQualifier) QualifyCountry(ctx context.Context, ip string) bool {
 	logger := logging.FromContext(ctx)
 	ipapiClient := http.Client{}
-	url := fmt.Sprintf("https://ipapi.co/%s/country_name/", ip)
+	url := fmt.Sprintf(urlPattern, ip)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		logger.WithError(err).Error("cant create request")

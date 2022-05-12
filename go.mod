@@ -6,6 +6,7 @@ require (
 	github.com/gavv/httpexpect/v2 v2.3.1
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/jackc/pgx/v4 v4.15.0
+	github.com/jarcoal/httpmock v1.2.0
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/rubenv/sql-migrate v1.1.1
 	github.com/sirupsen/logrus v1.8.1
