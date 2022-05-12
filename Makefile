@@ -12,3 +12,6 @@ docker-build:
 
 lint: ## Run go lint
 	golangci-lint run
+
+test: ## Run tests
+	go test ./...
