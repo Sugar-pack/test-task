@@ -3,11 +3,11 @@ package migration
 import (
 	"context"
 
-	"github.com/Sugar-pack/test-task/internal/config"
-	"github.com/Sugar-pack/test-task/internal/logging"
-
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
+
+	"github.com/Sugar-pack/test-task/internal/config"
+	"github.com/Sugar-pack/test-task/internal/logging"
 )
 
 // Connect creates new db connection.

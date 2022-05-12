@@ -3,18 +3,18 @@ package main
 import (
 	"context"
 	"errors"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/Sugar-pack/test-task/internal/api"
 	"github.com/Sugar-pack/test-task/internal/config"
 	"github.com/Sugar-pack/test-task/internal/handler"
 	"github.com/Sugar-pack/test-task/internal/logging"
 	"github.com/Sugar-pack/test-task/internal/migration"
 	"github.com/Sugar-pack/test-task/internal/repository"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 func main() {
@@ -67,8 +67,7 @@ func main() {
 
 	logger.Info("Shutdown signal received")
 
-	shutdownTime := 10 * time.Second // TODO make it configurable
-	ctx, cancel := context.WithTimeout(context.Background(), shutdownTime)
+	ctx, cancel := context.WithTimeout(context.Background(), appConfig.API.ShutdownTimeout)
 	defer func() {
 		cancel()
 	}()

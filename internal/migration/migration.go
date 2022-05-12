@@ -4,9 +4,10 @@ package migration
 import (
 	"context"
 
+	migrate "github.com/rubenv/sql-migrate"
+
 	"github.com/Sugar-pack/test-task/internal/config"
 	"github.com/Sugar-pack/test-task/internal/logging"
-	migrate "github.com/rubenv/sql-migrate"
 )
 
 // Apply applies database migrations.

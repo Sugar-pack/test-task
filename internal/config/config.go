@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 // DB contains database and migration settings.
@@ -16,8 +18,9 @@ type DB struct {
 
 // API contains api settings.
 type API struct {
-	Address   string   `mapstructure:"address"`
-	Countries []string `mapstructure:"countries"`
+	Address         string        `mapstructure:"address"`
+	Countries       []string      `mapstructure:"countries"`
+	ShutdownTimeout time.Duration `mapstructure:"shutdown_timeout"`
 }
 
 // AppConfig is a container for application config.
