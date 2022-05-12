@@ -1,6 +1,6 @@
 ---
 api:
-  address: :8080
+  bind: :8080
   countries:
     - Cyprus
     #- Undefined # FOR LOCAL TESTING
