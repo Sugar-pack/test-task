@@ -18,7 +18,7 @@ type DB struct {
 
 // API contains api settings.
 type API struct {
-	Address         string        `mapstructure:"address"`
+	Bind            string        `mapstructure:"bind"`
 	Countries       []string      `mapstructure:"countries"`
 	ShutdownTimeout time.Duration `mapstructure:"shutdown_timeout"`
 }

@@ -47,7 +47,7 @@ func main() {
 	qualifier := api.NewIPAPI(appConfig.API.Countries)
 	router := api.SetupRouter(logger, companyHandler, qualifier)
 	server := http.Server{
-		Addr:    appConfig.API.Address,
+		Addr:    appConfig.API.Bind,
 		Handler: router,
 	}
 
@@ -56,7 +56,7 @@ func main() {
 	defer signal.Stop(shutdown)
 
 	go func() {
-		logger.Info("Server is listening on ", appConfig.API.Address)
+		logger.Info("Server is listening on ", appConfig.API.Bind)
 		errLaS := server.ListenAndServe()
 		if errLaS != nil && errors.Is(errLaS, http.ErrServerClosed) {
 			logger.Fatal(errLaS)
