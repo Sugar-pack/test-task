@@ -6,7 +6,7 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/Sugar-pack/test-task/internal/handler"
+	"github.com/Sugar-pack/test-task/internal/helper"
 	"github.com/Sugar-pack/test-task/internal/logging"
 )
 
@@ -40,7 +40,7 @@ func WithLogRequestBoundaries() func(next http.Handler) http.Handler {
 	return httpMw
 }
 
-func CountryAccessMiddleware(qualifier CountryQualifier, whiteList []string) func(next http.Handler) http.Handler {
+func CountryAccessMiddleware(qualifier CountryQualifier) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 			ctx := request.Context()
@@ -57,29 +57,19 @@ func CountryAccessMiddleware(qualifier CountryQualifier, whiteList []string) fun
 			userIP, err := IPbyRequest(request)
 			if err != nil {
 				logger.WithError(err).Error("failed to get user ip")
-				handler.InternalError(ctx, writer, "cant get ip")
+				helper.InternalError(ctx, writer, "cant get ip")
 
 				return
 			}
 			logger.Info("user ip ", userIP)
 			logger.Info("ip")
-			country, err := qualifier.QualifyCountry(ctx, userIP)
-			if err != nil {
-				logger.WithError(err).Error("cant get country")
-				handler.InternalError(ctx, writer, "cant get country")
+			isAllow := qualifier.QualifyCountry(ctx, userIP)
+			if !isAllow {
+				helper.Forbidden(ctx, writer, "country not allowed")
 
 				return
 			}
-			for _, countryFromWL := range whiteList {
-				if country == countryFromWL {
-					next.ServeHTTP(writer, request)
-
-					return
-				}
-			}
-			handler.Forbidden(ctx, writer, "country not allowed")
-
-			return
+			next.ServeHTTP(writer, request)
 		})
 	}
 }

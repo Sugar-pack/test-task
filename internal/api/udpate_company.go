@@ -1,9 +1,11 @@
-package handler
+package api
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/Sugar-pack/test-task/internal/helper"
 
 	"github.com/Sugar-pack/test-task/internal/logging"
 	"github.com/Sugar-pack/test-task/internal/model"
@@ -18,7 +20,7 @@ func (h *CompanyHandler) UpdateCompanies(writer http.ResponseWriter, request *ht
 	err := json.NewDecoder(request.Body).Decode(updateCompany)
 	if err != nil {
 		logger.WithError(err).Error("Decode error")
-		BadRequest(ctx, writer, "Cant decode request body")
+		helper.BadRequest(ctx, writer, "Cant decode request body")
 
 		return
 	}
@@ -26,11 +28,11 @@ func (h *CompanyHandler) UpdateCompanies(writer http.ResponseWriter, request *ht
 	updatedRows, err := h.CompanyRepository.UpdateCompany(ctx, updateCompanyForFilter)
 	if err != nil {
 		logger.WithError(err).Error("UpdateCompany repository error")
-		InternalError(ctx, writer, "Cant update company")
+		helper.InternalError(ctx, writer, "Cant update company")
 
 		return
 	}
-	StatusOk(ctx, writer, fmt.Sprintf("%d rows updated", updatedRows))
+	helper.StatusOk(ctx, writer, fmt.Sprintf("%d rows updated", updatedRows))
 }
 
 func MapJSONUpdateToDB(companyUpdate *model.CompanyForUpdate) *repository.CompanyForUpdate {

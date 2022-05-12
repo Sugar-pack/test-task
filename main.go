@@ -11,7 +11,6 @@ import (
 
 	"github.com/Sugar-pack/test-task/internal/api"
 	"github.com/Sugar-pack/test-task/internal/config"
-	"github.com/Sugar-pack/test-task/internal/handler"
 	"github.com/Sugar-pack/test-task/internal/logging"
 	"github.com/Sugar-pack/test-task/internal/migration"
 	"github.com/Sugar-pack/test-task/internal/repository"
@@ -44,8 +43,9 @@ func main() {
 
 	repo := repository.NewPsqlRepository(dbConn)
 
-	companyHandler := handler.NewCompanyHandler(repo)
-	router := api.SetupRouter(logger, companyHandler, appConfig.API.Countries)
+	companyHandler := api.NewCompanyHandler(repo)
+	qualifier := api.NewIPAPI(appConfig.API.Countries)
+	router := api.SetupRouter(logger, companyHandler, qualifier)
 	server := http.Server{
 		Addr:    appConfig.API.Address,
 		Handler: router,

@@ -1,8 +1,10 @@
-package handler
+package api
 
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/Sugar-pack/test-task/internal/helper"
 
 	"github.com/go-chi/chi/v5"
 
@@ -19,12 +21,12 @@ func (h *CompanyHandler) GetCompany(writer http.ResponseWriter, request *http.Re
 	companies, err := h.CompanyRepository.GetCompany(ctx, &companyForFilter)
 	if err != nil {
 		logger.WithError(err).Error("GetCompany repository error")
-		InternalError(ctx, writer, "Cant get company")
+		helper.InternalError(ctx, writer, "Cant get company")
 
 		return
 	}
 	if len(companies) == 0 {
-		NotFound(ctx, writer, "Companies not found")
+		helper.NotFound(ctx, writer, "Companies not found")
 
 		return
 	}
@@ -35,11 +37,11 @@ func (h *CompanyHandler) GetCompany(writer http.ResponseWriter, request *http.Re
 	err = json.NewEncoder(writer).Encode(companies)
 	if err != nil {
 		logger.WithError(err).Error("Encode error")
-		InternalError(ctx, writer, "Cant encode response")
+		helper.InternalError(ctx, writer, "Cant encode response")
 
 		return
 	}
-	StatusOk(ctx, writer, "")
+	helper.StatusOk(ctx, writer, "")
 }
 
 func MapDBCompanyToJSON(company *repository.Company) model.Company {

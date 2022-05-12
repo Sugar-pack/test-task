@@ -15,3 +15,14 @@ lint: ## Run go lint
 
 test: ## Run tests
 	go test ./...
+
+test-coverage: ## Run go test with coverage
+	go test ./... -coverprofile=coverage.out `go list ./...`
+
+gen-repo-mock:
+	@docker run -v `pwd`:/src -w /src vektra/mockery --case snake --dir internal/repository --output internal/mocks/repository --outpkg repository --all
+
+gen-qualifier-mock:
+	@docker run -v `pwd`:/src -w /src vektra/mockery --case snake --dir internal/api --output internal/mocks/qualifier --outpkg qualifier --all
+
+

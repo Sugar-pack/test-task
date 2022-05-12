@@ -11,12 +11,18 @@ import (
 )
 
 type CountryQualifier interface {
-	QualifyCountry(ctx context.Context, ip string) (string, error)
+	QualifyCountry(ctx context.Context, ip string) bool
 }
 
-type IPAPICountryQualifier struct{}
+type IPAPICountryQualifier struct {
+	WhiteList []string
+}
 
-func (i *IPAPICountryQualifier) QualifyCountry(ctx context.Context, ip string) (string, error) {
+func NewIPAPI(whiteList []string) *IPAPICountryQualifier {
+	return &IPAPICountryQualifier{WhiteList: whiteList}
+}
+
+func (i *IPAPICountryQualifier) QualifyCountry(ctx context.Context, ip string) bool {
 	logger := logging.FromContext(ctx)
 	ipapiClient := http.Client{}
 	url := fmt.Sprintf("https://ipapi.co/%s/country_name/", ip)
@@ -24,14 +30,14 @@ func (i *IPAPICountryQualifier) QualifyCountry(ctx context.Context, ip string) (
 	if err != nil {
 		logger.WithError(err).Error("cant create request")
 
-		return "", fmt.Errorf("cant create request %w", err)
+		return false
 	}
 	req.Header.Set("User-Agent", "ipapi.co/#go-v1.5")
 	resp, err := ipapiClient.Do(req)
 	if err != nil {
 		logger.WithError(err).Error("cant get response")
 
-		return "", fmt.Errorf("cant get response %w", err)
+		return false
 	}
 	defer func(Body io.ReadCloser) {
 		errClose := Body.Close()
@@ -43,9 +49,15 @@ func (i *IPAPICountryQualifier) QualifyCountry(ctx context.Context, ip string) (
 	if err != nil {
 		logger.WithError(err).Error("cant get country")
 
-		return "", fmt.Errorf("cant get country %w", err)
+		return false
 	}
 	logger.Info("country ", string(country))
 
-	return string(country), nil
+	for _, countryName := range i.WhiteList {
+		if string(country) == countryName {
+			return true
+		}
+	}
+
+	return false
 }
