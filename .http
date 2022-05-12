@@ -1,9 +1,5 @@
-POST http://localhost:8080/companies/search
+GET http://localhost:8080/companies/name=test c&code=test&country=&website=&phone=/
 
-{
-    "name": "test",
-    "code": "test"
-}
 
 ###
 POST http://localhost:8080/companies/create
@@ -18,14 +14,11 @@ POST http://localhost:8080/companies/create
 
 
 ###
-POST http://localhost:8080/companies/delete
+DELETE http://localhost:8080/companies/name=test c&code=test&country=&website=&phone=/
 
-{
-    "name": "test company2"
-}
 
 ###
-POST http://localhost:8080/companies/update
+PATCH http://localhost:8080/companies/update
 
 {
 "filter_fields":

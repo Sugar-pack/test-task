@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"strings"
 
 	"github.com/Sugar-pack/test-task/internal/handler"
 	"github.com/Sugar-pack/test-task/internal/logging"
@@ -47,8 +46,8 @@ func CountryAccessMiddleware(qualifier CountryQualifier, whiteList []string) fun
 			ctx := request.Context()
 			logger := logging.FromContext(ctx)
 			adr := request.RemoteAddr
-			route := request.RequestURI
-			if !strings.Contains(route, "delete") && !strings.Contains(route, "create") { // TODO think how to make it right
+			method := request.Method
+			if method != http.MethodPost && method != http.MethodDelete {
 				next.ServeHTTP(writer, request)
 
 				return

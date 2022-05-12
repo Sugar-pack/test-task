@@ -1,27 +1,17 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/Sugar-pack/test-task/internal/logging"
-	"github.com/Sugar-pack/test-task/internal/model"
 )
 
 func (h *CompanyHandler) DeleteCompanies(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	logger := logging.FromContext(ctx)
 	logger.Info("CreateCompany begin")
-	company := &model.Company{}
-	err := json.NewDecoder(request.Body).Decode(company)
-	if err != nil {
-		logger.WithError(err).Error("Decode error")
-		BadRequest(ctx, writer, "Cant decode request body")
-
-		return
-	}
-	companyForFilter := MapJSONToFilter(company)
+	companyForFilter := CompanyFilterFromRequest(request)
 	deletedRows, err := h.CompanyRepository.DeleteCompany(ctx, &companyForFilter)
 	if err != nil {
 		logger.WithError(err).Error("DeleteCompany repository error")

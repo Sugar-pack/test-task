@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
+
 	"github.com/Sugar-pack/test-task/internal/logging"
 	"github.com/Sugar-pack/test-task/internal/model"
 	"github.com/Sugar-pack/test-task/internal/repository"
@@ -13,15 +15,7 @@ func (h *CompanyHandler) GetCompany(writer http.ResponseWriter, request *http.Re
 	ctx := request.Context()
 	logger := logging.FromContext(ctx)
 	logger.Info("CreateCompany begin")
-	company := &model.Company{}
-	err := json.NewDecoder(request.Body).Decode(company)
-	if err != nil {
-		logger.WithError(err).Error("Decode error")
-		BadRequest(ctx, writer, "Cant decode request body")
-
-		return
-	}
-	companyForFilter := MapJSONToFilter(company)
+	companyForFilter := CompanyFilterFromRequest(request)
 	companies, err := h.CompanyRepository.GetCompany(ctx, &companyForFilter)
 	if err != nil {
 		logger.WithError(err).Error("GetCompany repository error")
@@ -34,7 +28,6 @@ func (h *CompanyHandler) GetCompany(writer http.ResponseWriter, request *http.Re
 
 		return
 	}
-	logger.Info(companies)
 	var companiesJSON []model.Company
 	for _, comp := range companies {
 		companiesJSON = append(companiesJSON, MapDBCompanyToJSON(&comp))
@@ -59,12 +52,18 @@ func MapDBCompanyToJSON(company *repository.Company) model.Company {
 	}
 }
 
-func MapJSONToFilter(company *model.Company) repository.CompanyForFilter {
+func CompanyFilterFromRequest(request *http.Request) repository.CompanyForFilter {
+	companyName := chi.URLParam(request, "name")
+	companyCode := chi.URLParam(request, "code")
+	companyCountry := chi.URLParam(request, "country")
+	companyWebsite := chi.URLParam(request, "website")
+	companyPhone := chi.URLParam(request, "phone")
+
 	return repository.CompanyForFilter{
-		Name:    company.Name,
-		Code:    company.Code,
-		Country: company.Country,
-		Website: company.Website,
-		Phone:   company.Phone,
+		Name:    companyName,
+		Code:    companyCode,
+		Country: companyCountry,
+		Website: companyWebsite,
+		Phone:   companyPhone,
 	}
 }
