@@ -23,13 +23,15 @@ func (i *IPAPICountryQualifier) QualifyCountry(ctx context.Context, ip string) (
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		logger.WithError(err).Error("cant create request")
-		return "", err
+
+		return "", fmt.Errorf("cant create request %w", err)
 	}
 	req.Header.Set("User-Agent", "ipapi.co/#go-v1.5")
 	resp, err := ipapiClient.Do(req)
 	if err != nil {
 		logger.WithError(err).Error("cant get response")
-		return "", err
+
+		return "", fmt.Errorf("cant get response %w", err)
 	}
 	defer func(Body io.ReadCloser) {
 		errClose := Body.Close()
@@ -40,8 +42,10 @@ func (i *IPAPICountryQualifier) QualifyCountry(ctx context.Context, ip string) (
 	country, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		logger.WithError(err).Error("cant get country")
-		return "", err
+
+		return "", fmt.Errorf("cant get country %w", err)
 	}
 	logger.Info("country ", string(country))
+
 	return string(country), nil
 }

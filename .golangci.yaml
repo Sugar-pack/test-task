@@ -761,6 +761,9 @@ linters:
 #    - gocritic
   enable-all: true
   disable:
+    - exhaustivestruct
+    - nonamedreturns
+    - exhaustruct
     - maligned
     - prealloc
     - scopelint
@@ -858,7 +861,7 @@ issues:
 #  new-from-patch: path/to/patch/file
 
   # Fix found issues (if it's supported by the linter)
-  fix: true
+  fix: false
 
 severity:
   # Default value is empty string.

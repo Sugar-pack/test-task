@@ -1,11 +1,14 @@
 package api
 
 import (
+	"errors"
 	"fmt"
-	"github.com/Sugar-pack/test-task/internal/handler"
-	"github.com/Sugar-pack/test-task/internal/logging"
 	"net"
 	"net/http"
+	"strings"
+
+	"github.com/Sugar-pack/test-task/internal/handler"
+	"github.com/Sugar-pack/test-task/internal/logging"
 )
 
 func LoggingMiddleware(logger logging.Logger) func(http.Handler) http.Handler {
@@ -31,8 +34,10 @@ func WithLogRequestBoundaries() func(next http.Handler) http.Handler {
 			next.ServeHTTP(writer, request)
 			logger.WithField("request", logRequest).Trace("REQUEST_COMPLETED")
 		}
+
 		return http.HandlerFunc(handlerFn)
 	}
+
 	return httpMw
 }
 
@@ -42,11 +47,19 @@ func CountryAccessMiddleware(qualifier CountryQualifier, whiteList []string) fun
 			ctx := request.Context()
 			logger := logging.FromContext(ctx)
 			adr := request.RemoteAddr
+			route := request.RequestURI
+			if !strings.Contains(route, "delete") && !strings.Contains(route, "create") { // TODO think how to make it right
+				next.ServeHTTP(writer, request)
+
+				return
+			}
+
 			logger.Info("request from ", adr)
 			userIP, err := IPbyRequest(request)
 			if err != nil {
 				logger.WithError(err).Error("failed to get user ip")
 				handler.InternalError(ctx, writer, "cant get ip")
+
 				return
 			}
 			logger.Info("user ip ", userIP)
@@ -55,6 +68,7 @@ func CountryAccessMiddleware(qualifier CountryQualifier, whiteList []string) fun
 			if err != nil {
 				logger.WithError(err).Error("cant get country")
 				handler.InternalError(ctx, writer, "cant get country")
+
 				return
 			}
 			for _, countryFromWL := range whiteList {
@@ -78,7 +92,7 @@ func IPbyRequest(req *http.Request) (string, error) {
 	}
 	userIP := net.ParseIP(ip)
 	if userIP == nil {
-		return "", fmt.Errorf("invalid ip: %s", ip)
+		return "", errors.New(fmt.Sprintf("invalid ip: %s", ip)) //nolint:goerr113 // we want to return error with ip
 	}
 
 	return userIP.String(), nil
