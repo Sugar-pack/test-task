@@ -11,7 +11,7 @@ func SetupRouter(logger logging.Logger, handler *handler.CompanyHandler, whiteLi
 	router := chi.NewRouter()
 	qualifier := &IPAPICountryQualifier{}
 	router.Use(LoggingMiddleware(logger), WithLogRequestBoundaries(), CountryAccessMiddleware(qualifier, whiteList))
-	router.Post("/companies", handler.CreateCompany)
+	router.Post("/companies/create", handler.CreateCompany)
 	router.Post("/companies/search", handler.GetCompany)
 	router.Post("/companies/delete", handler.DeleteCompanies)
 	router.Post("/companies/update", handler.UpdateCompanies)

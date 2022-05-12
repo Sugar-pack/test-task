@@ -2,8 +2,8 @@
 api:
   address: :8080
   countries:
-    - Russia
-    - Undefined
+    - Cyprus
+    #- Undefined # FOR LOCAL TESTING
   shutdown_timeout: 5m
 db:
   conn_string: "host=companies-db port=5432 user=user_db dbname=companies sslmode=disable" # use it for the local development only

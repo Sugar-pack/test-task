@@ -6,7 +6,7 @@ POST http://localhost:8080/companies/search
 }
 
 ###
-POST http://localhost:8080/companies
+POST http://localhost:8080/companies/create
 
 {
     "name": "test company2",

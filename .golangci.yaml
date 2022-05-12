@@ -761,6 +761,9 @@ linters:
 #    - gocritic
   enable-all: true
   disable:
+    - exhaustivestruct
+    - nonamedreturns
+    - exhaustruct
     - maligned
     - prealloc
     - scopelint
