@@ -34,6 +34,7 @@ func (h *CompanyHandler) GetCompany(writer http.ResponseWriter, request *http.Re
 	for _, comp := range companies {
 		companiesJSON = append(companiesJSON, MapDBCompanyToJSON(&comp))
 	}
+	writer.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(writer).Encode(companies)
 	if err != nil {
 		logger.WithError(err).Error("Encode error")

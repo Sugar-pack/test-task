@@ -2,20 +2,20 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Sugar-pack/test-task/internal/model"
-
-	"github.com/stretchr/testify/mock"
-
 	"github.com/gavv/httpexpect/v2"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/Sugar-pack/test-task/internal/logging"
 	"github.com/Sugar-pack/test-task/internal/mocks/qualifier"
 	"github.com/Sugar-pack/test-task/internal/mocks/repository"
+	"github.com/Sugar-pack/test-task/internal/model"
+	repo "github.com/Sugar-pack/test-task/internal/repository"
 )
 
 const localhost = "127.0.0.1"
@@ -148,5 +148,133 @@ func (s *CompanyTestSuite) TestCompanyHandler_UpdateCompany_OK() {
 	s.repo.On("UpdateCompany", mock.AnythingOfType("*context.valueCtx"), MapJSONUpdateToDB(&companyUpdate)).
 		Return(int64(1), nil)
 	httpExpect.PATCH("/companies/update").WithJSON(companyUpdate).Expect().Status(http.StatusOK)
+	s.repo.AssertExpectations(t)
+}
+
+func (s *CompanyTestSuite) TestCompanyHandler_DeleteCompany_NoAccess() {
+	t := s.T()
+
+	httpExpect := httpexpect.New(t, s.server.URL)
+	company := repo.CompanyForFilter{
+		Name:    "name",
+		Code:    "code",
+		Country: "country",
+		Website: "website",
+		Phone:   "phone",
+	}
+
+	s.qualifier.On("QualifyCountry", mock.AnythingOfType("*context.valueCtx"), localhost).
+		Return(false)
+	path := fmt.Sprintf("/companies/name=%s&code=%s&country=%s&website=%s&phone=%s/",
+		company.Name, company.Code, company.Country, company.Website, company.Phone)
+	httpExpect.DELETE(path).Expect().Status(http.StatusForbidden)
+	s.qualifier.AssertExpectations(t)
+}
+
+func (s *CompanyTestSuite) TestCompanyHandler_DeleteCompany_RepoErr() {
+	t := s.T()
+
+	httpExpect := httpexpect.New(t, s.server.URL)
+	company := repo.CompanyForFilter{
+		Name:    "name",
+		Code:    "code",
+		Country: "country",
+		Website: "website",
+		Phone:   "phone",
+	}
+
+	s.qualifier.On("QualifyCountry", mock.AnythingOfType("*context.valueCtx"), localhost).
+		Return(true)
+	path := fmt.Sprintf("/companies/name=%s&code=%s&country=%s&website=%s&phone=%s/",
+		company.Name, company.Code, company.Country, company.Website, company.Phone)
+	err := errors.New("error")
+	s.repo.On("DeleteCompany", mock.AnythingOfType("*context.valueCtx"), &company).Return(int64(0), err)
+	httpExpect.DELETE(path).Expect().Status(http.StatusInternalServerError)
+	s.repo.AssertExpectations(t)
+	s.qualifier.AssertExpectations(t)
+}
+
+func (s *CompanyTestSuite) TestCompanyHandler_DeleteCompany_OK() {
+	t := s.T()
+
+	httpExpect := httpexpect.New(t, s.server.URL)
+	company := repo.CompanyForFilter{
+		Name:    "name",
+		Code:    "code",
+		Country: "country",
+		Website: "website",
+		Phone:   "phone",
+	}
+
+	s.qualifier.On("QualifyCountry", mock.AnythingOfType("*context.valueCtx"), localhost).
+		Return(true)
+	path := fmt.Sprintf("/companies/name=%s&code=%s&country=%s&website=%s&phone=%s/",
+		company.Name, company.Code, company.Country, company.Website, company.Phone)
+	s.repo.On("DeleteCompany", mock.AnythingOfType("*context.valueCtx"), &company).Return(int64(1), nil)
+	httpExpect.DELETE(path).Expect().Status(http.StatusOK)
+	s.repo.AssertExpectations(t)
+	s.qualifier.AssertExpectations(t)
+}
+
+func (s *CompanyTestSuite) TestCompanyHandler_GetCompany_RepoErr() {
+	t := s.T()
+
+	httpExpect := httpexpect.New(t, s.server.URL)
+	company := repo.CompanyForFilter{
+		Name:    "name",
+		Code:    "code",
+		Country: "country",
+		Website: "website",
+		Phone:   "phone",
+	}
+
+	path := fmt.Sprintf("/companies/name=%s&code=%s&country=%s&website=%s&phone=%s/",
+		company.Name, company.Code, company.Country, company.Website, company.Phone)
+	err := errors.New("error")
+	s.repo.On("GetCompany", mock.AnythingOfType("*context.valueCtx"), &company).Return(nil, err)
+	httpExpect.GET(path).Expect().Status(http.StatusInternalServerError)
+	s.repo.AssertExpectations(t)
+}
+
+func (s *CompanyTestSuite) TestCompanyHandler_GetCompany_NoResult() {
+	t := s.T()
+
+	httpExpect := httpexpect.New(t, s.server.URL)
+	company := repo.CompanyForFilter{
+		Name:    "name",
+		Code:    "code",
+		Country: "country",
+		Website: "website",
+		Phone:   "phone",
+	}
+
+	path := fmt.Sprintf("/companies/name=%s&code=%s&country=%s&website=%s&phone=%s/",
+		company.Name, company.Code, company.Country, company.Website, company.Phone)
+	s.repo.On("GetCompany", mock.AnythingOfType("*context.valueCtx"), &company).Return(nil, nil)
+	httpExpect.GET(path).Expect().Status(http.StatusNotFound)
+	s.repo.AssertExpectations(t)
+}
+
+func (s *CompanyTestSuite) TestCompanyHandler_GetCompany_OK() {
+	t := s.T()
+
+	httpExpect := httpexpect.New(t, s.server.URL)
+	company := repo.CompanyForFilter{
+		Name:    "name",
+		Code:    "code",
+		Country: "country",
+		Website: "website",
+		Phone:   "phone",
+	}
+
+	path := fmt.Sprintf("/companies/name=%s&code=%s&country=%s&website=%s&phone=%s/",
+		company.Name, company.Code, company.Country, company.Website, company.Phone)
+	returnCompanies := []repo.Company{
+		{
+			Name: "name",
+		},
+	}
+	s.repo.On("GetCompany", mock.AnythingOfType("*context.valueCtx"), &company).Return(returnCompanies, nil)
+	httpExpect.GET(path).Expect().Status(http.StatusOK).JSON().Equal(returnCompanies)
 	s.repo.AssertExpectations(t)
 }
