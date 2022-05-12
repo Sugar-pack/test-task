@@ -5,14 +5,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/Sugar-pack/test-task/internal/handler"
 	"github.com/Sugar-pack/test-task/internal/logging"
 )
 
-func SetupRouter(logger logging.Logger, handler *handler.CompanyHandler, whiteList []string) *chi.Mux {
+func SetupRouter(logger logging.Logger, handler *CompanyHandler, qualifier CountryQualifier) *chi.Mux {
 	router := chi.NewRouter()
-	qualifier := &IPAPICountryQualifier{}
-	router.Use(LoggingMiddleware(logger), WithLogRequestBoundaries(), CountryAccessMiddleware(qualifier, whiteList))
+	router.Use(LoggingMiddleware(logger), WithLogRequestBoundaries(), CountryAccessMiddleware(qualifier))
 	router.Post("/companies/create", handler.CreateCompany)
 	filterString := "name={name}&code={code}&country={country}&website={website}&phone={phone}"
 	router.Get(fmt.Sprintf("/companies/%s/", filterString), handler.GetCompany)

@@ -1,8 +1,10 @@
-package handler
+package api
 
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/Sugar-pack/test-task/internal/helper"
 
 	"github.com/Sugar-pack/test-task/internal/logging"
 	"github.com/Sugar-pack/test-task/internal/model"
@@ -27,18 +29,18 @@ func (h *CompanyHandler) CreateCompany(writer http.ResponseWriter, request *http
 	err := json.NewDecoder(request.Body).Decode(company)
 	if err != nil {
 		logger.WithError(err).Error("Decode error")
-		BadRequest(ctx, writer, "Cant decode request body")
+		helper.BadRequest(ctx, writer, "Cant decode request body")
 
 		return
 	}
 	err = h.CompanyRepository.CreateCompany(ctx, MapJSONCompanyToDB(company))
 	if err != nil {
 		logger.WithError(err).Error("CreateCompany repository error")
-		InternalError(ctx, writer, "Cant create company")
+		helper.InternalError(ctx, writer, "Cant create company")
 
 		return
 	}
-	StatusOk(ctx, writer, "Company created")
+	helper.StatusOk(ctx, writer, "Company created")
 }
 
 func MapJSONCompanyToDB(company *model.Company) *repository.Company {

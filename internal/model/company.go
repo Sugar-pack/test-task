@@ -1,7 +1,7 @@
 package model
 
 type Company struct {
-	Name    string `json:"name"`
+	Name    string `json:"name,omitempty"`
 	Code    string `json:"code"`
 	Country string `json:"country"`
 	Website string `json:"website"`
