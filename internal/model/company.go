@@ -7,3 +7,8 @@ type Company struct {
 	Website string `json:"website"`
 	Phone   string `json:"phone"`
 }
+
+type CompanyForUpdate struct {
+	FilterFields    Company `json:"filter_fields"`
+	FieldsForUpdate Company `json:"fields_for_update"`
+}

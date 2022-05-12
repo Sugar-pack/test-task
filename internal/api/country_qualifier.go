@@ -3,18 +3,18 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/Sugar-pack/test-task/internal/logging"
 	"io"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/Sugar-pack/test-task/internal/logging"
 )
 
 type CountryQualifier interface {
 	QualifyCountry(ctx context.Context, ip string) (string, error)
 }
 
-type IPAPICountryQualifier struct {
-}
+type IPAPICountryQualifier struct{}
 
 func (i *IPAPICountryQualifier) QualifyCountry(ctx context.Context, ip string) (string, error) {
 	logger := logging.FromContext(ctx)

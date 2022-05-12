@@ -3,6 +3,7 @@ package migration
 
 import (
 	"context"
+
 	"github.com/Sugar-pack/test-task/internal/config"
 	"github.com/Sugar-pack/test-task/internal/logging"
 	migrate "github.com/rubenv/sql-migrate"

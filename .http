@@ -1,3 +1,11 @@
+POST http://localhost:8080/companies/search
+
+{
+    "name": "test",
+    "code": "test"
+}
+
+###
 POST http://localhost:8080/companies
 
 {
@@ -6,4 +14,36 @@ POST http://localhost:8080/companies
     "country": "test country",
     "website": "test website",
     "phone": "test phone"
+}
+
+
+###
+POST http://localhost:8080/companies/delete
+
+{
+    "name": "test company2"
+}
+
+###
+POST http://localhost:8080/companies/update
+
+{
+"filter_fields":
+
+{
+    "name": "test company2",
+    "code": "test code",
+    "country": "test country",
+    "website": "test website",
+    "phone": "test phone"
+
+},
+"fields_to_update":
+{
+    "name": "test company3",
+    "code": "test code",
+    "country": "test country",
+    "website": "test website",
+    "phone": "test phone"
+}
 }

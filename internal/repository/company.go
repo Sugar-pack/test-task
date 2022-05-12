@@ -2,15 +2,14 @@ package repository
 
 import (
 	"context"
-	"github.com/Sugar-pack/test-task/internal/model"
 )
 
 type CompanyForFilter struct {
-	Name    string
-	Code    string
-	Country string
-	Website string
-	Phone   string
+	Name    string `db:"name"`
+	Code    string `db:"code"`
+	Country string `db:"country"`
+	Website string `db:"website"`
+	Phone   string `db:"phone"`
 }
 
 type Company struct {
@@ -21,9 +20,14 @@ type Company struct {
 	Phone   string `db:"phone"`
 }
 
+type CompanyForUpdate struct {
+	FilterFields    CompanyForFilter
+	FieldsForUpdate Company
+}
+
 type CompanyRepository interface {
-	CreateCompany(ctx context.Context, company *model.Company) error
-	GetCompany(ctx context.Context, company *CompanyForFilter) (*model.Company, error)
-	DeleteCompany(ctx context.Context, company *CompanyForFilter) error
-	UpdateCompany(ctx context.Context, company *model.Company) error
+	CreateCompany(ctx context.Context, company *Company) error
+	GetCompany(ctx context.Context, company *CompanyForFilter) ([]Company, error)
+	DeleteCompany(ctx context.Context, company *CompanyForFilter) (int64, error)
+	UpdateCompany(ctx context.Context, company *CompanyForUpdate) (int64, error)
 }

@@ -9,3 +9,6 @@ docker-up:
 .PHONY: docker-build
 docker-build:
 	@docker-compose build
+
+lint: ## Run go lint
+	golangci-lint run

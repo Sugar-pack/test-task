@@ -21,14 +21,14 @@ func LoggingMiddleware(logger logging.Logger) func(http.Handler) http.Handler {
 
 func WithLogRequestBoundaries() func(next http.Handler) http.Handler {
 	httpMw := func(next http.Handler) http.Handler {
-		handlerFn := func(w http.ResponseWriter, r *http.Request) {
-			ctx := r.Context()
+		handlerFn := func(writer http.ResponseWriter, request *http.Request) {
+			ctx := request.Context()
 			logger := logging.FromContext(ctx)
-			requestURI := r.RequestURI
-			requestMethod := r.Method
+			requestURI := request.RequestURI
+			requestMethod := request.Method
 			logRequest := fmt.Sprintf("%s %s", requestMethod, requestURI)
 			logger.WithField("request", logRequest).Trace("REQUEST_STARTED")
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(writer, request)
 			logger.WithField("request", logRequest).Trace("REQUEST_COMPLETED")
 		}
 		return http.HandlerFunc(handlerFn)
@@ -36,34 +36,36 @@ func WithLogRequestBoundaries() func(next http.Handler) http.Handler {
 	return httpMw
 }
 
-func CountryAccessMiddleware(c CountryQualifier, whiteList []string) func(next http.Handler) http.Handler {
+func CountryAccessMiddleware(qualifier CountryQualifier, whiteList []string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := r.Context()
+		return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			ctx := request.Context()
 			logger := logging.FromContext(ctx)
-			adr := r.RemoteAddr
+			adr := request.RemoteAddr
 			logger.Info("request from ", adr)
-			userIP, err := IPbyRequest(r)
+			userIP, err := IPbyRequest(request)
 			if err != nil {
 				logger.WithError(err).Error("failed to get user ip")
-				handler.InternalError(ctx, w, "cant get ip")
+				handler.InternalError(ctx, writer, "cant get ip")
 				return
 			}
 			logger.Info("user ip ", userIP)
 			logger.Info("ip")
-			country, err := c.QualifyCountry(ctx, userIP)
+			country, err := qualifier.QualifyCountry(ctx, userIP)
 			if err != nil {
 				logger.WithError(err).Error("cant get country")
-				handler.InternalError(ctx, w, "cant get country")
+				handler.InternalError(ctx, writer, "cant get country")
 				return
 			}
 			for _, countryFromWL := range whiteList {
 				if country == countryFromWL {
-					next.ServeHTTP(w, r)
+					next.ServeHTTP(writer, request)
+
 					return
 				}
 			}
-			handler.Forbidden(ctx, w, "country not allowed")
+			handler.Forbidden(ctx, writer, "country not allowed")
+
 			return
 		})
 	}
@@ -72,11 +74,12 @@ func CountryAccessMiddleware(c CountryQualifier, whiteList []string) func(next h
 func IPbyRequest(req *http.Request) (string, error) {
 	ip, _, err := net.SplitHostPort(req.RemoteAddr)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("cant split ip: %w", err)
 	}
 	userIP := net.ParseIP(ip)
 	if userIP == nil {
 		return "", fmt.Errorf("invalid ip: %s", ip)
 	}
+
 	return userIP.String(), nil
 }

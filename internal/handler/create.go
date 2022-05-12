@@ -2,10 +2,11 @@ package handler
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/Sugar-pack/test-task/internal/logging"
 	"github.com/Sugar-pack/test-task/internal/model"
 	"github.com/Sugar-pack/test-task/internal/repository"
-	"net/http"
 )
 
 type CompanyHandler struct {
@@ -27,13 +28,25 @@ func (h *CompanyHandler) CreateCompany(writer http.ResponseWriter, request *http
 	if err != nil {
 		logger.WithError(err).Error("Decode error")
 		BadRequest(ctx, writer, "Cant decode request body")
+
 		return
 	}
-	err = h.CompanyRepository.CreateCompany(ctx, company)
+	err = h.CompanyRepository.CreateCompany(ctx, MapJSONCompanyToDB(company))
 	if err != nil {
 		logger.WithError(err).Error("CreateCompany repository error")
 		InternalError(ctx, writer, "Cant create company")
+
 		return
 	}
 	StatusOk(ctx, writer, "Company created")
+}
+
+func MapJSONCompanyToDB(company *model.Company) *repository.Company {
+	return &repository.Company{
+		Name:    company.Name,
+		Code:    company.Code,
+		Country: company.Country,
+		Website: company.Website,
+		Phone:   company.Phone,
+	}
 }

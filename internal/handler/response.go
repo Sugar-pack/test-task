@@ -3,9 +3,10 @@ package handler
 import (
 	"bytes"
 	"context"
-	"github.com/Sugar-pack/test-task/internal/logging"
 	"net/http"
 	"strings"
+
+	"github.com/Sugar-pack/test-task/internal/logging"
 )
 
 const ErrMsgWritingResponse = "Error while writing response"
@@ -46,26 +47,27 @@ func Forbidden(ctx context.Context, writer http.ResponseWriter, msg string) {
 	}
 }
 
-func NotFound(ctx context.Context, w http.ResponseWriter, msg string) {
+func NotFound(ctx context.Context, writer http.ResponseWriter, msg string) {
 	logger := logging.FromContext(ctx)
 	body := strings.NewReader(msg)
 	buff := new(bytes.Buffer)
 	if _, err := buff.ReadFrom(body); err != nil {
 		logger.WithError(err).Error(ErrMsgWritingResponse)
+
 		return
 	}
-	rawResponse(ctx, w, http.StatusNotFound, nil, buff.Bytes())
+	rawResponse(ctx, writer, http.StatusNotFound, nil, buff.Bytes())
 }
 
-func rawResponse(ctx context.Context, w http.ResponseWriter, httpCode int, httpHeaders http.Header, body []byte) {
+func rawResponse(ctx context.Context, writer http.ResponseWriter, httpCode int, httpHeaders http.Header, body []byte) {
 	logger := logging.FromContext(ctx)
 	for k, vs := range httpHeaders {
 		for _, v := range vs {
-			w.Header().Add(k, v)
+			writer.Header().Add(k, v)
 		}
 	}
-	w.WriteHeader(httpCode)
-	if _, wErr := w.Write(body); wErr != nil {
+	writer.WriteHeader(httpCode)
+	if _, wErr := writer.Write(body); wErr != nil {
 		logger.WithError(wErr).Error(ErrMsgWritingResponse)
 	}
 }
