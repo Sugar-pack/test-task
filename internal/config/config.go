@@ -23,10 +23,16 @@ type API struct {
 	ShutdownTimeout time.Duration `mapstructure:"shutdown_timeout"`
 }
 
+type RabbitMQ struct {
+	URL   string `mapstructure:"url"`
+	Queue string `mapstructure:"queue"`
+}
+
 // AppConfig is a container for application config.
 type AppConfig struct {
-	API *API `mapstructure:"api"`
-	Db  *DB  `mapstructure:"db"`
+	RabbitMQ *RabbitMQ `mapstructure:"rabbit_mq"`
+	API      *API      `mapstructure:"api"`
+	Db       *DB       `mapstructure:"db"`
 }
 
 // GetAppConfig returns *Config.

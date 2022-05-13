@@ -46,13 +46,12 @@ func (r *SQLCompanyRepo) DeleteCompany(ctx context.Context, company *CompanyForF
 }
 
 func (r *SQLCompanyRepo) UpdateCompany(ctx context.Context, company *CompanyForUpdate) (int64, error) {
-	query := `UPDATE companies SET name = $1, code = $2, country = $3, website = $4, phone = $5 WHERE name
-            LIKE $6 AND code LIKE $7 AND country LIKE $8 AND website LIKE $9 AND phone LIKE $10`
-	result, err := r.dbConn.ExecContext(ctx, query, company.FieldsForUpdate.Name,
-		company.FieldsForUpdate.Code, company.FieldsForUpdate.Country, company.FieldsForUpdate.Website,
-		company.FieldsForUpdate.Phone, CreatePattern(company.FilterFields.Name), CreatePattern(company.FilterFields.Code),
-		CreatePattern(company.FilterFields.Country), CreatePattern(company.FilterFields.Website),
-		CreatePattern(company.FilterFields.Phone))
+	query := `UPDATE companies SET code = $1, country = $2, website = $3, phone = $4 WHERE name
+            LIKE $5 AND code LIKE $6 AND country LIKE $7 AND website LIKE $8 AND phone LIKE $9`
+	result, err := r.dbConn.ExecContext(ctx, query, company.FieldsForUpdate.Code, company.FieldsForUpdate.Country,
+		company.FieldsForUpdate.Website, company.FieldsForUpdate.Phone, CreatePattern(company.FilterFields.Name),
+		CreatePattern(company.FilterFields.Code), CreatePattern(company.FilterFields.Country),
+		CreatePattern(company.FilterFields.Website), CreatePattern(company.FilterFields.Phone))
 	if err != nil {
 		return 0, err
 	}

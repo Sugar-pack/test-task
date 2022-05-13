@@ -143,7 +143,7 @@ linters-settings:
     exclude_godoc_examples: false
 
   funlen:
-    lines: 60
+    lines: 100
     statements: 40
 
   gci:

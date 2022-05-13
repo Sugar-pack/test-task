@@ -6,6 +6,7 @@ services:
       - "8080:8080"
     depends_on:
       - "companies-db"
+      - "rabbitmq"
     networks:
       - default
     restart: on-failure:3
@@ -22,3 +23,14 @@ services:
       POSTGRES_USER: user_db
       POSTGRES_DB: companies
       POSTGRES_HOST_AUTH_METHOD: trust
+  rabbitmq:
+    image: 'rabbitmq'
+    volumes:
+      - ./rabbit-mq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    ports:
+      - "5673:5673"
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status" ]
+      interval: 5s
+      timeout: 15s
+      retries: 5

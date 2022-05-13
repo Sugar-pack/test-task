@@ -9,6 +9,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/Sugar-pack/test-task/internal/sender"
+
 	"github.com/Sugar-pack/test-task/internal/api"
 	"github.com/Sugar-pack/test-task/internal/config"
 	"github.com/Sugar-pack/test-task/internal/logging"
@@ -43,7 +45,8 @@ func main() {
 
 	repo := repository.NewPsqlRepository(dbConn)
 
-	companyHandler := api.NewCompanyHandler(repo)
+	rabbitMQ := sender.NewRMQProducer(appConfig.RabbitMQ.Queue, appConfig.RabbitMQ.URL)
+	companyHandler := api.NewCompanyHandler(repo, rabbitMQ)
 	qualifier := api.NewIPAPI(appConfig.API.Countries)
 	router := api.SetupRouter(logger, companyHandler, qualifier)
 	server := http.Server{

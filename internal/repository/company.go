@@ -22,7 +22,14 @@ type Company struct {
 
 type CompanyForUpdate struct {
 	FilterFields    CompanyForFilter
-	FieldsForUpdate Company
+	FieldsForUpdate CompanyUpdatable
+}
+
+type CompanyUpdatable struct {
+	Code    string `db:"code"`
+	Country string `db:"country"`
+	Website string `db:"website"`
+	Phone   string `db:"phone"`
 }
 
 type CompanyRepository interface {
