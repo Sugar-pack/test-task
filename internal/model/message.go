@@ -7,12 +7,15 @@ type Message struct {
 	Data string `json:"data"`
 }
 
+const SuccessType = "Success"
+const ErrorType = "Error"
+
 func NewMessage(code int, msg string) *Message {
 	message := Message{}
 	if code >= http.StatusOK && code < http.StatusMultipleChoices {
-		message.Type = "Success"
+		message.Type = SuccessType
 	} else {
-		message.Type = "Error"
+		message.Type = ErrorType
 	}
 	message.Data = msg
 
