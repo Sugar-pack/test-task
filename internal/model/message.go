@@ -7,8 +7,10 @@ type Message struct {
 	Data string `json:"data"`
 }
 
-const SuccessType = "Success"
-const ErrorType = "Error"
+const (
+	SuccessType = "Success"
+	ErrorType   = "Error"
+)
 
 func NewMessage(code int, msg string) *Message {
 	message := Message{}
