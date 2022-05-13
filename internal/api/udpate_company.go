@@ -26,7 +26,6 @@ func (h *CompanyHandler) UpdateCompanies(writer http.ResponseWriter, request *ht
 
 		return
 	}
-	logger.Info("Decode request body", "updateCompany", updateCompany)
 	updateCompanyForFilter := MapJSONUpdateToDB(updateCompany)
 	updatedRows, err := h.CompanyRepository.UpdateCompany(ctx, updateCompanyForFilter)
 	if err != nil {
