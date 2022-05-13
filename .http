@@ -5,7 +5,7 @@ GET http://localhost:8080/companies/name=test c&code=test&country=&website=&phon
 POST http://localhost:8080/companies/create
 
 {
-    "name": "test company2",
+    "name": "test company",
     "code": "test code",
     "country": "test country",
     "website": "test website",
@@ -24,19 +24,21 @@ PATCH http://localhost:8080/companies/update
 "filter_fields":
 
 {
-    "name": "test company2",
+    "name": "test",
     "code": "test code",
     "country": "test country",
     "website": "test website",
     "phone": "test phone"
 
 },
-"fields_to_update":
+"fields_for_update":
+
 {
-    "name": "test company3",
+    "name": "test",
     "code": "test code",
     "country": "test country",
     "website": "test website",
-    "phone": "test phone"
+    "phone": "test phonea"
 }
 }
+

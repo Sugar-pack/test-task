@@ -145,8 +145,7 @@ func (s *CompanyTestSuite) TestCompanyHandler_UpdateCompany_RepoErr() {
 			Website: "website",
 			Phone:   "phone",
 		},
-		FieldsForUpdate: model.Company{
-			Name:    "new name",
+		FieldsForUpdate: model.CompanyUpdatable{
 			Code:    "new code",
 			Country: "new country",
 			Website: "new website",
@@ -172,8 +171,7 @@ func (s *CompanyTestSuite) TestCompanyHandler_UpdateCompany_ProducerErr() {
 			Website: "website",
 			Phone:   "phone",
 		},
-		FieldsForUpdate: model.Company{
-			Name:    "new name",
+		FieldsForUpdate: model.CompanyUpdatable{
 			Code:    "new code",
 			Country: "new country",
 			Website: "new website",
@@ -203,8 +201,7 @@ func (s *CompanyTestSuite) TestCompanyHandler_UpdateCompany_OK() {
 			Website: "website",
 			Phone:   "phone",
 		},
-		FieldsForUpdate: model.Company{
-			Name:    "new name",
+		FieldsForUpdate: model.CompanyUpdatable{
 			Code:    "new code",
 			Country: "new country",
 			Website: "new website",

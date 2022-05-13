@@ -26,6 +26,7 @@ func (h *CompanyHandler) UpdateCompanies(writer http.ResponseWriter, request *ht
 
 		return
 	}
+	logger.Info("Decode request body", "updateCompany", updateCompany)
 	updateCompanyForFilter := MapJSONUpdateToDB(updateCompany)
 	updatedRows, err := h.CompanyRepository.UpdateCompany(ctx, updateCompanyForFilter)
 	if err != nil {
@@ -51,8 +52,7 @@ func MapJSONUpdateToDB(companyUpdate *model.CompanyForUpdate) *repository.Compan
 			Website: companyUpdate.FilterFields.Website,
 			Phone:   companyUpdate.FilterFields.Phone,
 		},
-		FieldsForUpdate: repository.Company{
-			Name:    companyUpdate.FieldsForUpdate.Name,
+		FieldsForUpdate: repository.CompanyUpdatable{
 			Code:    companyUpdate.FieldsForUpdate.Code,
 			Country: companyUpdate.FieldsForUpdate.Country,
 			Website: companyUpdate.FieldsForUpdate.Website,
