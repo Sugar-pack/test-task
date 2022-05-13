@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Sugar-pack/test-task/internal/sender"
+
 	"github.com/Sugar-pack/test-task/internal/helper"
 
 	"github.com/Sugar-pack/test-task/internal/logging"
@@ -31,6 +33,11 @@ func (h *CompanyHandler) UpdateCompanies(writer http.ResponseWriter, request *ht
 		helper.InternalError(ctx, writer, "Cant update company")
 
 		return
+	}
+	err = h.Producer.PublishMessage(ctx, sender.JSONType,
+		model.NewMessage(http.StatusOK, fmt.Sprintf("%d rows updated", updatedRows)))
+	if err != nil {
+		logger.WithError(err).Error("Cant publish message")
 	}
 	helper.StatusOk(ctx, writer, fmt.Sprintf("%d rows updated", updatedRows))
 }

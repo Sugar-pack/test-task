@@ -2,7 +2,10 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+
+	"github.com/Sugar-pack/test-task/internal/sender"
 
 	"github.com/Sugar-pack/test-task/internal/helper"
 
@@ -13,11 +16,13 @@ import (
 
 type CompanyHandler struct {
 	CompanyRepository repository.CompanyRepository
+	Producer          sender.Producer
 }
 
-func NewCompanyHandler(companyRepository repository.CompanyRepository) *CompanyHandler {
+func NewCompanyHandler(companyRepository repository.CompanyRepository, producer sender.Producer) *CompanyHandler {
 	return &CompanyHandler{
 		CompanyRepository: companyRepository,
+		Producer:          producer,
 	}
 }
 
@@ -39,6 +44,11 @@ func (h *CompanyHandler) CreateCompany(writer http.ResponseWriter, request *http
 		helper.InternalError(ctx, writer, "Cant create company")
 
 		return
+	}
+	err = h.Producer.PublishMessage(ctx, sender.JSONType, model.NewMessage(http.StatusOK,
+		fmt.Sprintf("Company %s created", company.Name)))
+	if err != nil {
+		logger.WithError(err).Error("Cant publish message")
 	}
 	helper.StatusOk(ctx, writer, "Company created")
 }

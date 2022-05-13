@@ -14,8 +14,10 @@ import (
 	"github.com/Sugar-pack/test-task/internal/logging"
 	"github.com/Sugar-pack/test-task/internal/mocks/qualifier"
 	"github.com/Sugar-pack/test-task/internal/mocks/repository"
+	"github.com/Sugar-pack/test-task/internal/mocks/sender"
 	"github.com/Sugar-pack/test-task/internal/model"
 	repo "github.com/Sugar-pack/test-task/internal/repository"
+	constant "github.com/Sugar-pack/test-task/internal/sender"
 )
 
 const localhost = "127.0.0.1"
@@ -25,6 +27,7 @@ type CompanyTestSuite struct {
 	repo      *repository.CompanyRepository
 	qualifier *qualifier.CountryQualifier
 	server    *httptest.Server
+	producer  *sender.Producer
 }
 
 func TestOrderStatusSuite(t *testing.T) {
@@ -34,12 +37,14 @@ func TestOrderStatusSuite(t *testing.T) {
 
 func (s *CompanyTestSuite) SetupTest() {
 	logger := logging.GetLogger()
-	repo := &repository.CompanyRepository{}
-	q := &qualifier.CountryQualifier{}
-	s.repo = repo
-	s.qualifier = q
-	handler := NewCompanyHandler(repo)
-	router := SetupRouter(logger, handler, q)
+	mockRepo := &repository.CompanyRepository{}
+	mockQualifier := &qualifier.CountryQualifier{}
+	mockProducer := &sender.Producer{}
+	s.repo = mockRepo
+	s.qualifier = mockQualifier
+	s.producer = mockProducer
+	handler := NewCompanyHandler(mockRepo, mockProducer)
+	router := SetupRouter(logger, handler, mockQualifier)
 	s.server = httptest.NewServer(router)
 }
 
@@ -72,6 +77,31 @@ func (s *CompanyTestSuite) TestCompanyHandler_CreateCompany_RepoErr() {
 	httpExpect.POST("/companies/create").WithJSON(company).Expect().Status(http.StatusInternalServerError)
 }
 
+func (s *CompanyTestSuite) TestCompanyHandler_CreateCompany_ProducerErr() {
+	t := s.T()
+
+	httpExpect := httpexpect.New(t, s.server.URL)
+	company := model.Company{
+		Name:    "test name",
+		Code:    "code",
+		Country: "country",
+		Website: "website",
+		Phone:   "phone",
+	}
+
+	err := errors.New("error")
+	s.qualifier.On("QualifyCountry", mock.AnythingOfType("*context.valueCtx"), localhost).
+		Return(true)
+	s.repo.On("CreateCompany", mock.AnythingOfType("*context.valueCtx"), MapJSONCompanyToDB(&company)).
+		Return(nil)
+	s.producer.On("PublishMessage", mock.AnythingOfType("*context.valueCtx"), constant.JSONType,
+		mock.AnythingOfType("*model.Message")).Return(err)
+	httpExpect.POST("/companies/create").WithJSON(company).Expect().Status(http.StatusOK)
+	s.qualifier.AssertExpectations(t)
+	s.repo.AssertExpectations(t)
+	s.producer.AssertExpectations(t)
+}
+
 func (s *CompanyTestSuite) TestCompanyHandler_CreateCompany_OK() {
 	t := s.T()
 
@@ -87,7 +117,12 @@ func (s *CompanyTestSuite) TestCompanyHandler_CreateCompany_OK() {
 		Return(true)
 	s.repo.On("CreateCompany", mock.AnythingOfType("*context.valueCtx"), MapJSONCompanyToDB(&company)).
 		Return(nil)
+	s.producer.On("PublishMessage", mock.AnythingOfType("*context.valueCtx"), constant.JSONType,
+		mock.AnythingOfType("*model.Message")).Return(nil)
 	httpExpect.POST("/companies/create").WithJSON(company).Expect().Status(http.StatusOK)
+	s.qualifier.AssertExpectations(t)
+	s.repo.AssertExpectations(t)
+	s.producer.AssertExpectations(t)
 }
 
 func (s *CompanyTestSuite) TestCompanyHandler_UpdateCompany_DecodeErr() {
@@ -125,6 +160,37 @@ func (s *CompanyTestSuite) TestCompanyHandler_UpdateCompany_RepoErr() {
 	s.repo.AssertExpectations(t)
 }
 
+func (s *CompanyTestSuite) TestCompanyHandler_UpdateCompany_ProducerErr() {
+	t := s.T()
+
+	httpExpect := httpexpect.New(t, s.server.URL)
+	companyUpdate := model.CompanyForUpdate{
+		FilterFields: model.Company{
+			Name:    "name",
+			Code:    "code",
+			Country: "country",
+			Website: "website",
+			Phone:   "phone",
+		},
+		FieldsForUpdate: model.Company{
+			Name:    "new name",
+			Code:    "new code",
+			Country: "new country",
+			Website: "new website",
+			Phone:   "new phone",
+		},
+	}
+
+	err := errors.New("error")
+	s.repo.On("UpdateCompany", mock.AnythingOfType("*context.valueCtx"), MapJSONUpdateToDB(&companyUpdate)).
+		Return(int64(1), nil)
+	s.producer.On("PublishMessage", mock.AnythingOfType("*context.valueCtx"), constant.JSONType,
+		mock.AnythingOfType("*model.Message")).Return(err)
+	httpExpect.PATCH("/companies/update").WithJSON(companyUpdate).Expect().Status(http.StatusOK)
+	s.repo.AssertExpectations(t)
+	s.producer.AssertExpectations(t)
+}
+
 func (s *CompanyTestSuite) TestCompanyHandler_UpdateCompany_OK() {
 	t := s.T()
 
@@ -147,8 +213,11 @@ func (s *CompanyTestSuite) TestCompanyHandler_UpdateCompany_OK() {
 	}
 	s.repo.On("UpdateCompany", mock.AnythingOfType("*context.valueCtx"), MapJSONUpdateToDB(&companyUpdate)).
 		Return(int64(1), nil)
+	s.producer.On("PublishMessage", mock.AnythingOfType("*context.valueCtx"), constant.JSONType,
+		mock.AnythingOfType("*model.Message")).Return(nil)
 	httpExpect.PATCH("/companies/update").WithJSON(companyUpdate).Expect().Status(http.StatusOK)
 	s.repo.AssertExpectations(t)
+	s.producer.AssertExpectations(t)
 }
 
 func (s *CompanyTestSuite) TestCompanyHandler_DeleteCompany_NoAccess() {
@@ -194,6 +263,32 @@ func (s *CompanyTestSuite) TestCompanyHandler_DeleteCompany_RepoErr() {
 	s.qualifier.AssertExpectations(t)
 }
 
+func (s *CompanyTestSuite) TestCompanyHandler_DeleteCompany_ProducerErr() {
+	t := s.T()
+
+	httpExpect := httpexpect.New(t, s.server.URL)
+	company := repo.CompanyForFilter{
+		Name:    "name",
+		Code:    "code",
+		Country: "country",
+		Website: "website",
+		Phone:   "phone",
+	}
+
+	err := errors.New("error")
+	s.qualifier.On("QualifyCountry", mock.AnythingOfType("*context.valueCtx"), localhost).
+		Return(true)
+	path := fmt.Sprintf("/companies/name=%s&code=%s&country=%s&website=%s&phone=%s/",
+		company.Name, company.Code, company.Country, company.Website, company.Phone)
+	s.repo.On("DeleteCompany", mock.AnythingOfType("*context.valueCtx"), &company).Return(int64(1), nil)
+	s.producer.On("PublishMessage", mock.AnythingOfType("*context.valueCtx"), constant.JSONType,
+		mock.AnythingOfType("*model.Message")).Return(err)
+	httpExpect.DELETE(path).Expect().Status(http.StatusOK)
+	s.repo.AssertExpectations(t)
+	s.qualifier.AssertExpectations(t)
+	s.producer.AssertExpectations(t)
+}
+
 func (s *CompanyTestSuite) TestCompanyHandler_DeleteCompany_OK() {
 	t := s.T()
 
@@ -211,9 +306,12 @@ func (s *CompanyTestSuite) TestCompanyHandler_DeleteCompany_OK() {
 	path := fmt.Sprintf("/companies/name=%s&code=%s&country=%s&website=%s&phone=%s/",
 		company.Name, company.Code, company.Country, company.Website, company.Phone)
 	s.repo.On("DeleteCompany", mock.AnythingOfType("*context.valueCtx"), &company).Return(int64(1), nil)
+	s.producer.On("PublishMessage", mock.AnythingOfType("*context.valueCtx"), constant.JSONType,
+		mock.AnythingOfType("*model.Message")).Return(nil)
 	httpExpect.DELETE(path).Expect().Status(http.StatusOK)
 	s.repo.AssertExpectations(t)
 	s.qualifier.AssertExpectations(t)
+	s.producer.AssertExpectations(t)
 }
 
 func (s *CompanyTestSuite) TestCompanyHandler_GetCompany_RepoErr() {

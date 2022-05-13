@@ -25,4 +25,7 @@ gen-repo-mock:
 gen-qualifier-mock:
 	@docker run -v `pwd`:/src -w /src vektra/mockery --case snake --dir internal/api --output internal/mocks/qualifier --outpkg qualifier --all
 
+gen-sender-mock:
+	@docker run -v `pwd`:/src -w /src vektra/mockery --case snake --dir internal/sender --output internal/mocks/sender --outpkg sender --all
+
 
