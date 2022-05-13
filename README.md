@@ -6,4 +6,4 @@
    I choose option 1 for access management.
 
 ### config filename
-Service uses **config.yml** as a configuration file name
+Service uses **config.yml** as a configuration file name.
